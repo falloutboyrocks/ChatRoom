@@ -3,20 +3,69 @@ import sys
 import time
 import argparse
 import thread
+import csv
 
+path = 'database/'
 
 def clientThread(client,addr):
 	while 1:
-		data = client.recv(4096)
 
-		'''
-		if data:
-			print('recv from ' + addr[0] + ':' + str(addr[1]) + ', command = ' + data)
-			client.send(data)
-		'''
+		
+		userInfo = []
+		userList = []
+		
+		with open(path + 'Registration.log','r') as file:
+			for info in csv.reader(file):
+				userInfo.append(info)
+				userList.append(info[0])
 
-		if data == 'login':
-			
+		print(userInfo)
+		print(userList)
+		
+		
+
+		
+
+
+		command = client.recv(4096)
+
+		if command == 'login':
+			client.send('LOGIN_START')
+
+			user = client.recv(4096)
+			password = client.recv(4096)
+
+			if user not in userList:
+				client.send('==== No such user ====')
+			elif [user,password] not in userInfo:
+				client.send('==== Wrong password ====')
+			else:
+				client.send('LOGIN_OK')
+
+
+
+		elif command == 'signup':
+			client.send('SIGNUP_START')
+
+			user = client.recv(4096)
+			password = client.recv(4096)
+
+			if user in userList:
+				client.send('==== Username has been used ====')
+			else:
+				newInfo = [[user,password]]
+				print(newInfo)
+				with open( path + 'Registration.log','a') as userFile:
+					csv.writer(userFile).writerows(newInfo)
+				client.send('SIGNUP_OK')
+
+
+		#client.send(data)
+
+
+
+
+
 
 	client.close()
 
