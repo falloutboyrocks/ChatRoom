@@ -7,12 +7,6 @@ import threading
 
 
 
-
-
-
-
-
-
 if __name__ == '__main__':
 
 	HOST = '10.5.2.101' 	#
