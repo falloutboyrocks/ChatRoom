@@ -7,6 +7,8 @@ import threading
 import select
 import Tkinter as tk
 from time import sleep
+import receiver
+import sender
 
 def quit():
 	global aid
@@ -119,6 +121,32 @@ if __name__ == '__main__':
 			elif command == 'Signout':
 				s.send('signout')
 				loggedIn = False
+			elif command == 'Upload':
+				s.send('upload')
+				target_user = raw_input("Upload user:")
+				s.send(target_user)
+				reply = s.recv(4096)
+				if reply == 'success':
+					filename = raw_input("Please select a file :")
+					sender.send(s,filename)
+					print('upload completd')
+				elif reply == 'No such user!!!':
+					print(reply)
+			elif command == 'Download':
+				s.send('download')
+				reply = s.recv(4096)
+				print(reply)
+				if reply == 'No file':
+					pass
+				else:
+					index = raw_input("Download file(by index):")
+					s.send(index)
+					reply = s.recv(4096)
+					if reply == 'success':
+						receiver.receive(s,'','',False)
+						print('download completd')
+					elif reply == 'No such index!!!':
+						print(reply)
 			else:
 				print('Invalid command!')
 

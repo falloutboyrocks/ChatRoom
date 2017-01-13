@@ -6,6 +6,9 @@ import thread
 import threading
 import csv
 import loggedInAction as act 
+import receiver
+import sender
+import os
 
 path = 'database/'
 updateRecord = []			# contains update records like "Alice_Bob" (Alice write to Bob)
@@ -57,10 +60,13 @@ def clientThread(client,addr):
 					print(newInfo)
 					with open( path + 'Registration.log','a') as userFile:
 						csv.writer(userFile).writerows(newInfo)
+					os.makedirs('database/'+ user)
+					with open('database/'+ user + '/file.log', 'w') as file_log:
+						pass
 					client.send('SIGNUP_OK')
 		else:	# logged in operation
-			client.setblocking(0)
 			while(loggedIn == True):
+				client.setblocking(0)
 				try:
 					command = client.recv(4096)
 				except:
@@ -92,7 +98,53 @@ def clientThread(client,addr):
 					if record not in updateRecord:
 						updateRecord.append(record)
 					command = ''
+				elif command == 'upload':
+					client.setblocking(1)
+					target_user = client.recv(4096)
+					print(target_user)
+					if target_user not in userList:
+						client.send('No such user!!!')
+					else:
+						client.send('success')
+						receiver.receive(client,user,target_user,True)
+						print('upload completed!!!!')
+					command = ''
+					client.setblocking(0)
+				elif command == 'download':
+					client.setblocking(1)
+					fileInfo = []
+					with open('database/'+ user + '/file.log', 'r') as file_log:
+						for info in csv.reader(file_log):
+							fileInfo.append(info)
+					print(fileInfo)
+					if fileInfo:
+						filestr = ''
+						for i in range(len(fileInfo)):
+							infostr = '\t'.join(fileInfo[i])
+							print(infostr)
+							filestr += str(i) + '\t' + infostr + '\n'
+					else:
+						filestr = 'No file'
+					client.send(filestr)
+
+					if filestr == 'No file':
+						pass
+					else:
+						indexstr = client.recv(4096)
+						if indexstr.isdigit() and int(indexstr)< len(fileInfo):
+							client.send('success')
+							sender.send(client,'database/' + user +'/'+fileInfo[int(indexstr)][1])
+							print('upload completed!!!!')
+						else:
+							client.send('No such index!!!')
+					command = ''
+
+					
+					client.setblocking(0)
+
 				elif command == 'signout':
+					loggedIn = False
+					client.setblocking(1)
 					break	
 			
 	client.close()
