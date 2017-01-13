@@ -28,10 +28,8 @@ def clientThread(client,addr):
 				userList.append(info[0])
 
 
-
-		command = client.recv(4096)
-
 		if(loggedIn == False):
+			command = client.recv(4096)
 			if command == 'login':
 				client.send('LOGIN_START')
 
@@ -63,25 +61,40 @@ def clientThread(client,addr):
 						csv.writer(userFile).writerows(newInfo)
 					client.send('SIGNUP_OK')
 		else:	# logged in operation
-			if checkout == True and target_user + '_' + user in updateRecord:
-				action.rcv()
-				updateRecord.remove(target_user + '_' + user)
-
-			if command == 'checkout':
-				target_user = client.recv(4096)
-				if target_user not in userList:
-					client.send("Check out failed!")
-				else:
-					client.send("Sucess")
-					action.checkout(target_user)
-					checkout = True
-			elif command == 'talk':
-				sentence = client.recv(4096)
-				action.talk(sentence)
-				record = user + "_" + target_user
-				if record not in updateRecord:
-					updateRecord.append(record)
+			client.setblocking(0)
+			while(loggedIn == True):
+				try:
+					command = client.recv(4096)
+				except:
+					pass
 				
+				if checkout == True and target_user + '_' + user in updateRecord:
+					print('find ' + target_user + ' to ' + user)
+					action.rcv()
+					updateRecord.remove(target_user + '_' + user)
+
+				if command == 'checkout':
+					client.setblocking(1)
+					target_user = client.recv(4096)
+					client.setblocking(0)
+					if target_user not in userList:
+						client.send("Check out failed!")
+					else:
+						client.send("Sucess")
+						action.checkout(target_user)
+						if target_user + '_' + user in updateRecord:
+							updateRecord.remove(target_user + '_' + user)
+						checkout = True
+						command = ''
+				elif command == 'talk':
+					client.setblocking(1)
+					sentence = client.recv(4096)
+					action.talk(sentence)
+					client.setblocking(0)
+					record = user + "_" + target_user
+					if record not in updateRecord:
+						updateRecord.append(record)
+					command = ''	
 			
 	client.close()
 

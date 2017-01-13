@@ -49,6 +49,7 @@ class loggedInAction(object):
 		self.readlock.release()
 		self.socket.send(output.getvalue())
 		print('send back')
+		print(output.getvalue())
 	
 	def render_all_user(self, user_list):
 		output = StringIO.StringIO()

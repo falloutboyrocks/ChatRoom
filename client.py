@@ -21,6 +21,7 @@ def polling(server):
 	server.setblocking(0)
 	try:
 		reply = server.recv(4096)
+		print(reply)
 		log.set(reply)
 	except:
 		pass
@@ -101,8 +102,8 @@ if __name__ == '__main__':
 				# a thread to handle input
 				global terminate
 				win = tk.Tk()
-				log = tk.StringVar()
 				input_text = tk.StringVar()
+				log = tk.StringVar()
 				label = tk.Label(win, textvariable=log).pack()		
 				send_button = tk.Button(win, text='Send', command= lambda: send(s)).pack()
 				quit_button = tk.Button(win, text='Quit', command=quit).pack()
