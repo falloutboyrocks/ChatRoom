@@ -8,6 +8,10 @@ import select
 import Tkinter as tk
 from time import sleep
 
+def quit():
+	global aid
+	win.after_cancel(aid)
+	win.destroy()
 
 def send(server):
 	userinput = input_text.get()
@@ -16,7 +20,6 @@ def send(server):
 	server.send('talk')
 	server.send(userinput)
 	
-
 def polling(server):
 	server.setblocking(0)
 	try:
@@ -25,7 +28,9 @@ def polling(server):
 		log.set(reply)
 	except:
 		pass
-	win.after(500, polling, server)
+	server.setblocking(1)
+	global aid
+	aid = win.after(500, polling, server)
 
 if __name__ == '__main__':
 
@@ -38,7 +43,7 @@ if __name__ == '__main__':
 		print('Socket created for '+ HOST + ':' + str(Port) )
 	except socket.error as msg :
 		print('Failed to create socket for '+ HOST + ':' + str(Port) + '. Error code: ' + str(msg[0]) + ' Error message: ' + msg[1])
-	
+		sys.exit(0)
 
 	#connect to server
 	try:
@@ -47,22 +52,20 @@ if __name__ == '__main__':
 		print('Socket connected to '+ HOST + ':' + str(Port) )
 	except socket.error as msg :
 		print('Failed to connect to '+ HOST + ':' + str(Port) + '. Error code: ' + str(msg[0]) + ' Error message: ' + msg[1])
-	
+		sys.exit(0)	
 
 	
 	ACTIVE = True
 	loggedIn = False
-	checkout = False
 	target_user = ''
 
 	while ACTIVE :
 		
 		if loggedIn == False:
-			command = raw_input("Please choose to login or signup : ")
+			command = raw_input("Please choose to login/signup/quit: ")
 
 			if command == 'login':
 				# do login
-				print('do login')
 				s.send(command)
 				reply = s.recv(4096)
 
@@ -88,44 +91,36 @@ if __name__ == '__main__':
 
 				reply = s.recv(4096)
 				print(reply)
+			elif command == 'quit':
+				break
+			else:
+				print('Invalid command!')	
 				
 		else:
-			if checkout == False:
+			command = raw_input('Checkout/Signout?: ')
+			if command == 'Checkout':
 				s.send('checkout')
-				target_user = raw_input("Check out users:\n")
+				target_user = raw_input("Check out user:")
 				s.send(target_user)
 				reply = s.recv(4096)
-				if reply != "Check out failed!":
-					checkout = True
-					print(reply)
+				print(reply)
+				if reply != 'Check out failed!':
+					win = tk.Tk()
+					input_text = tk.StringVar()
+					log = tk.StringVar()
+					label = tk.Label(win, textvariable=log).pack()		
+					send_button = tk.Button(win, text='Send', command= lambda: send(s)).pack()
+					quit_button = tk.Button(win, text='Quit', command=quit).pack()
+					entry = tk.Entry(win, textvariable=input_text).pack()
+					win.after(0, polling, s)
+					win.mainloop()
+				else:
+					pass
+			elif command == 'Signout':
+				s.send('signout')
+				loggedIn = False
 			else:
-				# a thread to handle input
-				global terminate
-				win = tk.Tk()
-				input_text = tk.StringVar()
-				log = tk.StringVar()
-				label = tk.Label(win, textvariable=log).pack()		
-				send_button = tk.Button(win, text='Send', command= lambda: send(s)).pack()
-				quit_button = tk.Button(win, text='Quit', command=quit).pack()
-				entry = tk.Entry(win, textvariable=input_text).pack()
-				win.after(0, polling, s)
-				win.mainloop()
-				checkout = False
-						
-								
-	
-
-
-
-
-
-		'''
-		s.send(command)
-			
-		reply = s.recv(4096)
-		print(reply)
-		'''
-		
+				print('Invalid command!')
 
 	#close socket
 	s.close()

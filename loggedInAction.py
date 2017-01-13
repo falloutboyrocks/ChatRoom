@@ -54,10 +54,7 @@ class loggedInAction(object):
 	def render_all_user(self, user_list):
 		output = StringIO.StringIO()
 		output.write("========UserList=========\n")
-		for i in iter(user_list):
-			if(user_list[i] == 1):
-				output.write(i + "		Online\n")
-			else:
-				output.write(i + "		Offline\n")
+		for i in user_list:
+			output.write(i + '\n')
 		output.write("=========================\n")
 		self.socket.send(output.getvalue())		

@@ -8,7 +8,6 @@ import csv
 import loggedInAction as act 
 
 path = 'database/'
-loggedUser = {}
 updateRecord = []			# contains update records like "Alice_Bob" (Alice write to Bob)
 
 def clientThread(client,addr):
@@ -42,9 +41,8 @@ def clientThread(client,addr):
 					client.send('Wrong password!')
 				else:
 					loggedIn = True
-					loggedUser[user] = 1
 					action = act.loggedInAction(client, user, readlock, writelock)
-					action.render_all_user(loggedUser)
+					action.render_all_user(userList)
 
 			elif command == 'signup':
 				client.send('SIGNUP_START')
@@ -69,7 +67,6 @@ def clientThread(client,addr):
 					pass
 				
 				if checkout == True and target_user + '_' + user in updateRecord:
-					print('find ' + target_user + ' to ' + user)
 					action.rcv()
 					updateRecord.remove(target_user + '_' + user)
 
@@ -94,7 +91,9 @@ def clientThread(client,addr):
 					record = user + "_" + target_user
 					if record not in updateRecord:
 						updateRecord.append(record)
-					command = ''	
+					command = ''
+				elif command == 'signout':
+					break	
 			
 	client.close()
 
@@ -106,13 +105,7 @@ if __name__ == '__main__':
 	PORT = 5566
 	readlock = threading.RLock()
 	writelock = threading.Lock()
-
-	#initialize user logged in list
-	with open( path + 'Registration.log', 'r') as userfile:
-		for info in csv.reader(userfile):		
-			loggedUser[info[0]] = 0
 				
-					
 	#create socket
 	try:
 		#create an AF_INET, STREAM socket (TCP)
