@@ -1,44 +1,61 @@
 import os.path
 import socket
+import StringIO
 
-class loggedInAction:
+class loggedInAction(object):
 	# target_user: the person user's talking to
-	logfile
-	target_user
-	user
 
-	def _init_(socket, user):
+	def __init__(self, socket, user, rlock, wlock):
 		self.socket = socket
 		self.user = user
+		self.readlock = rlock
+		self.writelock = rlock
 	
-	def checkout(target_user):
+	def checkout(self, target_user):
 		self.target_user = target_user
-		if(user > target_user):
-			filename = user + "_" + target_user
-		else
-			filename = target_user + "_" + target_user
+		if(self.user > self.target_user):
+			self.filename = self.user + "_" + self.target_user
+		else:
+			self.filename = self.target_user + "_" + self.user
 		
-		if(os.path.isfile(filename)):	# if the log file exist, return all logs to user
-			logfile = open(filename)
+		if(os.path.isfile(self.filename)):	# if the log file exist, return all logs to user
+			output = StringIO.StringIO()
+			self.readlock.acquire()
+			logfile = open(self.filename)
 			with logfile as f:
-				self.socket.sendall(f.readlines())
+				output.write(f.read())
+			self.readlock.release()
+			self.socket.send(output.getvalue())
 		else:				# if the log file doesn't exist, create the logfile
-			logfile = open(filename, 'w') 
-		self.socket.sendall("END\n")
+			self.writelock.acquire()
+			logfile = open(self.filename, 'w') 
+			self.writelock.release()
+			self.socket.send('Empty')
 
-
-	def talk(sentence):
-		logfile.write(user + ": " + sentence + "\n")
+	def talk(self, sentence):
+		self.writelock.acquire()
+		logfile = open(self.filename, 'a')
+		logfile.write(self.user + ": " + sentence + "\n")
+		self.writelock.release()
+		self.rcv()		
 			
-	def rcv():
+	def rcv(self):
+		print('send back')
+		output = StringIO.StringIO()
+		self.readlock.acquire()
+		logfile = open(self.filename, 'r')
 		with logfile as f:
-			self.socket.sendall(f.readlines())
-		self.socket.sendall("END\n")
+			output.write(f.read())
+		self.readlock.release()
+		self.socket.send(output.getvalue())
 	
-	def render_all_user(user_list):
+	def render_all_user(self, user_list):
+		output = StringIO.StringIO()
+		output.write("========UserList=========\n")
 		for i in iter(user_list):
 			if(user_list[i] == 1):
-				self.socket.sendall(i + "	Online\n")
+				output.write(i + "		Online\n")
 			else:
-				self.socket.sendall(i + "	Offline\n")
-		self.socket.sendall("END\n")
+				output.write(i + "		Offline\n")
+		output.write("=========================\n")
+		self.socket.send(output.getvalue())		

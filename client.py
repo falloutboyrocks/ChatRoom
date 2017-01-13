@@ -2,16 +2,39 @@ import socket
 import sys
 import argparse
 import time
+import thread
 import threading
+import select
+import Tkinter as tk
+
+terminate = False
+
+
+def listen_thread(server):
+	global terminate
+	win = tk.Tk()
+
+	while terminate == False:
+		ready = select.select([server], [], [], 10000)
+		if ready[0]:
+			data = server.recv(4096)
+			label = tk.Label(win, text=data)
+			label.pack()
+			win.mainloop()
+	terminate = False
+
+
+
+
 
 
 
 
 if __name__ == '__main__':
 
-	HOST = '10.5.2.101' 	#
+	HOST = 'localhost' 	#
 	Port = 5566
-
+	global terminate
 	#create socket
 	try:
 		#create an AF_INET, STREAM socket (TCP)
@@ -36,41 +59,67 @@ if __name__ == '__main__':
 
 	
 	ACTIVE = True
+	loggedIn = False
+	checkout = False
+	target_user = ''
 
 	while ACTIVE :
+		
+		if loggedIn == False:
+			command = raw_input("Please choose to login or signup : ")
 
-		command = raw_input("Please choose to login or signup : ")
+			if command == 'login':
+				# do login
+				print('do login')
+				s.send(command)
+				reply = s.recv(4096)
 
-		if command == 'login':
-			# do login
-			print('do login')
-			s.send(command)
-			reply = s.recv(4096)
+				user = raw_input("Username : ")
+				s.send(user)
+				password = raw_input("Password : ")
+				s.send(password)
+				reply = s.recv(4096)
+				print(reply)
+				if reply != 'No such user!' and reply != 'Wrong password!':
+					loggedIn = True
 
-			user = raw_input("Username : ")
-			s.send(user)
-			password = raw_input("Password : ")
-			s.send(password)
+			elif command == 'signup':
+				# do register
+				print('do signup')
+				s.send(command)
+				reply = s.recv(4096)
 
-			reply = s.recv(4096)
-			print(reply)
+				user = raw_input("Username : ")
+				s.send(user)
+				password = raw_input("Password : ")
+				s.send(password)
 
-		elif command == 'signup':
-			# do register
-			print('do signup')
-			s.send(command)
-			reply = s.recv(4096)
-
-			user = raw_input("Username : ")
-			s.send(user)
-			password = raw_input("Password : ")
-			s.send(password)
-
-			reply = s.recv(4096)
-			print(reply)
-			
-
-
+				reply = s.recv(4096)
+				print(reply)
+				
+		else:
+			if checkout == False:
+				s.send('checkout')
+				target_user = raw_input("Check out users:\n")
+				s.send(target_user)
+				reply = s.recv(4096)
+				if reply != "Check out failed!":
+					checkout = True
+					print(reply)
+			else:
+				# a thread to handle input
+				thread.start_new_thread(listen_thread, (s,))
+				while checkout == True:
+					command = raw_input("input: ")
+					if command == 'quit':
+						checkout = False
+						terminate = True
+					else:
+						s.send('talk')
+						s.send(command)	
+						
+								
+	
 
 
 
