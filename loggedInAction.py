@@ -36,11 +36,11 @@ class loggedInAction(object):
 		self.writelock.acquire()
 		logfile = open(self.filename, 'a')
 		logfile.write(self.user + ": " + sentence + "\n")
+		logfile.close()
 		self.writelock.release()
 		self.rcv()		
 			
 	def rcv(self):
-		print('send back')
 		output = StringIO.StringIO()
 		self.readlock.acquire()
 		logfile = open(self.filename, 'r')
@@ -48,6 +48,7 @@ class loggedInAction(object):
 			output.write(f.read())
 		self.readlock.release()
 		self.socket.send(output.getvalue())
+		print('send back')
 	
 	def render_all_user(self, user_list):
 		output = StringIO.StringIO()

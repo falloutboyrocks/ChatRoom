@@ -6,35 +6,30 @@ import thread
 import threading
 import select
 import Tkinter as tk
-
-terminate = False
-
-
-def listen_thread(server):
-	global terminate
-	win = tk.Tk()
-
-	while terminate == False:
-		ready = select.select([server], [], [], 10000)
-		if ready[0]:
-			data = server.recv(4096)
-			label = tk.Label(win, text=data)
-			label.pack()
-			win.mainloop()
-	terminate = False
+from time import sleep
 
 
+def send(server):
+	userinput = input_text.get()
+	input_text.set('')
+	server.setblocking(1)
+	server.send('talk')
+	server.send(userinput)
+	
 
-
-
-
-
+def polling(server):
+	server.setblocking(0)
+	try:
+		reply = server.recv(4096)
+		log.set(reply)
+	except:
+		pass
+	win.after(500, polling, server)
 
 if __name__ == '__main__':
 
 	HOST = 'localhost' 	#
 	Port = 5566
-	global terminate
 	#create socket
 	try:
 		#create an AF_INET, STREAM socket (TCP)
@@ -51,10 +46,6 @@ if __name__ == '__main__':
 		print('Socket connected to '+ HOST + ':' + str(Port) )
 	except socket.error as msg :
 		print('Failed to connect to '+ HOST + ':' + str(Port) + '. Error code: ' + str(msg[0]) + ' Error message: ' + msg[1])
-	
-
-
-
 	
 
 	
@@ -108,15 +99,17 @@ if __name__ == '__main__':
 					print(reply)
 			else:
 				# a thread to handle input
-				thread.start_new_thread(listen_thread, (s,))
-				while checkout == True:
-					command = raw_input("input: ")
-					if command == 'quit':
-						checkout = False
-						terminate = True
-					else:
-						s.send('talk')
-						s.send(command)	
+				global terminate
+				win = tk.Tk()
+				log = tk.StringVar()
+				input_text = tk.StringVar()
+				label = tk.Label(win, textvariable=log).pack()		
+				send_button = tk.Button(win, text='Send', command= lambda: send(s)).pack()
+				quit_button = tk.Button(win, text='Quit', command=quit).pack()
+				entry = tk.Entry(win, textvariable=input_text).pack()
+				win.after(0, polling, s)
+				win.mainloop()
+				checkout = False
 						
 								
 	
