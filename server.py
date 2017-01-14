@@ -9,6 +9,7 @@ import loggedInAction as act
 import receiver
 import sender
 import os
+from passlib.hash import pbkdf2_sha256
 
 path = 'database/'
 updateRecord = []			# contains update records like "Alice_Bob" (Alice write to Bob)
@@ -21,12 +22,12 @@ def clientThread(client,addr):
 	while 1:
 
 		
-		userInfo = []
+		userInfo = {}
 		userList = []
 		
 		with open(path + 'Registration.log','r') as file:
 			for info in csv.reader(file):
-				userInfo.append(info)
+				userInfo[info[0]] = info[1]
 				userList.append(info[0])
 
 
@@ -40,7 +41,7 @@ def clientThread(client,addr):
 
 				if user not in userList:
 					client.send('No such user!')
-				elif [user,password] not in userInfo:
+				elif pbkdf2_sha256.verify(password, userInfo[user]) == False:
 					client.send('Wrong password!')
 				else:
 					loggedIn = True
@@ -56,7 +57,7 @@ def clientThread(client,addr):
 				if user in userList:
 					client.send('==== Username has been used ====')
 				else:
-					newInfo = [[user,password]]
+					newInfo = [[user,pbkdf2_sha256.hash(password)]]
 					print(newInfo)
 					with open( path + 'Registration.log','a') as userFile:
 						csv.writer(userFile).writerows(newInfo)
