@@ -10,6 +10,7 @@ import receiver
 import sender
 import os
 from passlib.hash import pbkdf2_sha256
+import time
 
 path = 'database/'
 updateRecord = []			# contains update records like "Alice_Bob" (Alice write to Bob)
@@ -107,6 +108,7 @@ def clientThread(client,addr):
 					else:
 						client.send('success')
 						filenum = int(client.recv(4096))
+						client.send('success')
 						for i in range(filenum):
 							receiver.receive(client,user,target_user,True)
 						print('upload completed!!!!')

@@ -10,6 +10,7 @@ from time import sleep
 import receiver
 import sender
 import os
+import time
 
 def quit():
 	global aid
@@ -138,9 +139,11 @@ if __name__ == '__main__':
 							print(file + ' is not a file')
 					filenum = len(filenames)
 					s.send(str(filenum))
+					time.sleep(1)						
 					for filename in filenames:
 						sender.send(s,filename)
 						print(filename + ' upload completd')
+						time.sleep(1)
 				elif reply == 'No such user!!!':
 					print(reply)
 			elif command == 'Download':
