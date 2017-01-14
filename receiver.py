@@ -26,8 +26,8 @@ def receive(s,user,target_user,flag):
 	fhead = s.recv(FILEINFO_SIZE)
 	filename,temp1,filesize,temp2=struct.unpack('128s32sI8s',fhead)
 	#print filename,temp1,filesize,temp2
-	print filename,len(filename),type(filename)
-	print filesize
+	#print filename,len(filename),type(filename)
+	#print filesize
 	filename = filename.strip('\00') #...
 	x = filename.split("/")
 	lenth = len(x)
@@ -36,7 +36,7 @@ def receive(s,user,target_user,flag):
 	if flag == True:
 		path = 'database/' + target_user + '/'
 		newInfo = [[user,filename]]
-		print(newInfo)
+		#print(newInfo)
 		with open( path + 'file.log','a') as fileLog:
 			csv.writer(fileLog).writerows(newInfo)
 	else:
@@ -44,7 +44,7 @@ def receive(s,user,target_user,flag):
 
 	fp = open(path+filename,'wb')
 	restsize = filesize
-	print "processing ",
+	#print "processing ",
 	while 1:
 	    if restsize > BUFSIZE:
 	        filedata = s.recv(BUFSIZE)
@@ -55,10 +55,10 @@ def receive(s,user,target_user,flag):
 	    restsize = restsize-len(filedata)
 	    if restsize == 0:
 	     break
-	print "finished"
+	#print "finished"
 	fp.close()
 	'''
 	s.close()
 	recvSock.close()
 	'''
-	print "closed"
+	#print "closed"

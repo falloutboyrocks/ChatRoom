@@ -15,7 +15,7 @@ def send(s,filename):
     '''
     BUFSIZE = 1024
 
-    print filename
+    #print filename
     if os.path.isfile(filename):
         FILEINFO_SIZE=struct.calcsize('128s32sI8s')
         '''
@@ -29,11 +29,11 @@ def send(s,filename):
             filedata = fp.read(BUFSIZE)
             if not filedata: break
             s.send(filedata)
-        print "finshed"
+        #print "finshed"
         fp.close()
         '''
         s.close()
         '''
-        print "closed"
+        #print "closed"
     else:
         print "NoFile!! closed~"

@@ -105,7 +105,9 @@ def clientThread(client,addr):
 						client.send('No such user!!!')
 					else:
 						client.send('success')
-						receiver.receive(client,user,target_user,True)
+						filenum = int(client.recv(4096))
+						for i in range(filenum):
+							receiver.receive(client,user,target_user,True)
 						print('upload completed!!!!')
 					command = ''
 				elif command == 'download':

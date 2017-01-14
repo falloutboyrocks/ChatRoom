@@ -9,6 +9,7 @@ import Tkinter as tk
 from time import sleep
 import receiver
 import sender
+import os
 
 def quit():
 	global aid
@@ -127,9 +128,19 @@ if __name__ == '__main__':
 				s.send(target_user)
 				reply = s.recv(4096)
 				if reply == 'success':
-					filename = raw_input("Please select a file :")
-					sender.send(s,filename)
-					print('upload completd')
+					files = raw_input("Please select file(s)(delimited by space):")
+					files = files.split(' ')
+					filenames = []
+					for file in files:
+						if os.path.isfile(file):
+							filenames.append(file)
+						else:
+							print(file + ' is not a file')
+					filenum = len(filenames)
+					s.send(str(filenum))
+					for filename in filenames:
+						sender.send(s,filename)
+						print(filename + ' upload completd')
 				elif reply == 'No such user!!!':
 					print(reply)
 			elif command == 'Download':
