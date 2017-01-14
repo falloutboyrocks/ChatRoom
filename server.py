@@ -79,9 +79,8 @@ def clientThread(client,addr):
 				if command == 'checkout':
 					client.setblocking(1)
 					target_user = client.recv(4096)
-					client.setblocking(0)
 					if target_user not in userList:
-						client.send("Check out failed!")
+						client.send("No such user!")
 					else:
 						client.send("Sucess")
 						action.checkout(target_user)
@@ -93,7 +92,6 @@ def clientThread(client,addr):
 					client.setblocking(1)
 					sentence = client.recv(4096)
 					action.talk(sentence)
-					client.setblocking(0)
 					record = user + "_" + target_user
 					if record not in updateRecord:
 						updateRecord.append(record)

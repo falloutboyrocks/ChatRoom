@@ -99,14 +99,14 @@ if __name__ == '__main__':
 				print('Invalid command!')	
 				
 		else:
-			command = raw_input('Checkout/Signout?: ')
+			command = raw_input('Checkout/Signout/Upload/Download?: ')
 			if command == 'Checkout':
 				s.send('checkout')
 				target_user = raw_input("Check out user:")
 				s.send(target_user)
 				reply = s.recv(4096)
 				print(reply)
-				if reply != 'Check out failed!':
+				if reply != 'No such user!':
 					win = tk.Tk()
 					input_text = tk.StringVar()
 					log = tk.StringVar()
