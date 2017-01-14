@@ -1,4 +1,5 @@
 import socket
+import shutil
 import sys
 import time
 import argparse
@@ -66,6 +67,27 @@ def clientThread(client,addr):
 					with open('database/'+ user + '/file.log', 'w') as file_log:
 						pass
 					client.send('SIGNUP_OK')
+			elif command == 'delete':
+				client.send('DELETE_START')
+				user = client.recv(4096)
+				password = client.recv(4096)
+				verification = client.recv(4096)
+				
+				if user not in userList:
+					client.send('User does not exist')
+				elif pbkdf2_sha256.verify(password, userInfo[user]) == False:
+					client.send('Wrong password')
+				elif password != verification:
+					client.send('Password and verification are different')
+				else:
+					del userInfo[user]
+					shutil.rmtree(path + user)
+					with open( path + 'Registration.log', 'w') as wFile:
+						for key in userInfo:
+							csv.writer(wFile).writerows([key, userInfo[key]])
+					
+					client.send('Successfully removed')
+
 		else:	# logged in operation
 			while(loggedIn == True):
 				client.setblocking(0)

@@ -95,6 +95,18 @@ if __name__ == '__main__':
 
 				reply = s.recv(4096)
 				print(reply)
+			elif command == 'delete':
+				s.send('delete')
+				s.recv(4096)
+				user = raw_input("Username: ")
+				s.send(user)
+				password = raw_input("Password: ")
+				s.send(password)
+				verification = raw_input("Verification: ")
+				s.send(verification)
+				reply = s.recv(4096)
+				print(reply)
+			
 			elif command == 'quit':
 				break
 			else:
