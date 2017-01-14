@@ -84,7 +84,7 @@ def clientThread(client,addr):
 					shutil.rmtree(path + user)
 					with open( path + 'Registration.log', 'w') as wFile:
 						for key in userInfo:
-							csv.writer(wFile).writerows([key, userInfo[key]])
+							csv.writer(wFile).writerows([[key, userInfo[key]]])
 					
 					client.send('Successfully removed')
 			elif command == 'changepwd':
