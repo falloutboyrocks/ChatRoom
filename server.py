@@ -87,7 +87,26 @@ def clientThread(client,addr):
 							csv.writer(wFile).writerows([key, userInfo[key]])
 					
 					client.send('Successfully removed')
+			elif command == 'changepwd':
+				client.send('CHANGEPWD_START')
 
+				user = client.recv(4096)
+				password = client.recv(4096)
+
+				if user not in userList:
+					client.send('No such user!')
+				elif pbkdf2_sha256.verify(password, userInfo[user]) == False:
+					client.send('Wrong password!')
+				else:
+					client.send('Please enter your new password')
+					newpassword = client.recv(4096)
+					userInfo[user] = pbkdf2_sha256.hash(newpassword)
+					print user
+					print(userInfo[user])
+					with open( path + 'Registration.log','w') as userFile:
+						for u in userInfo.keys():
+							csv.writer(userFile).writerows([[u,userInfo[u]]])
+					client.send('CHANGEPWD_OK')
 		else:	# logged in operation
 			while(loggedIn == True):
 				client.setblocking(0)
