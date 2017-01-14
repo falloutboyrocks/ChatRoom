@@ -73,6 +73,7 @@ def clientThread(client,addr):
 					pass
 				
 				if checkout == True and target_user + '_' + user in updateRecord:
+					client.setblocking(1)
 					action.rcv()
 					updateRecord.remove(target_user + '_' + user)
 
@@ -107,7 +108,6 @@ def clientThread(client,addr):
 						receiver.receive(client,user,target_user,True)
 						print('upload completed!!!!')
 					command = ''
-					client.setblocking(0)
 				elif command == 'download':
 					client.setblocking(1)
 					fileInfo = []
@@ -136,9 +136,6 @@ def clientThread(client,addr):
 						else:
 							client.send('No such index!!!')
 					command = ''
-
-					
-					client.setblocking(0)
 
 				elif command == 'signout':
 					loggedIn = False
