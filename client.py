@@ -66,7 +66,7 @@ if __name__ == '__main__':
 	while ACTIVE :
 		
 		if loggedIn == False:
-			command = raw_input("Please choose to login/signup/quit: ")
+			command = raw_input("Please choose to login/signup/changepwd/quit: ")
 
 			if command == 'login':
 				# do login
@@ -95,6 +95,22 @@ if __name__ == '__main__':
 
 				reply = s.recv(4096)
 				print(reply)
+			elif command == 'changepwd':
+				# change password
+				s.send(command)
+				reply = s.recv(4096)
+
+				user = raw_input("Username : ")
+				s.send(user)
+				password = raw_input("Password : ")
+				s.send(password)
+				reply = s.recv(4096)
+				print(reply)
+				if reply != 'No such user!' and reply != 'Wrong password!':
+					newpassword = raw_input("New Password : ")
+					s.send(newpassword)
+					reply = s.recv(4096)
+					print(reply)
 			elif command == 'quit':
 				break
 			else:
